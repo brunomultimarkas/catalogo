@@ -20,12 +20,14 @@ const VIA_FACEBOOK = TOKEN.startsWith("EAA");
 const FB_API = process.env.FB_API || "https://graph.facebook.com/v21.0";
 
 async function contaInstagramDaPagina() {
-  const r = await fetch(`${FB_API}/me?fields=instagram_business_account{id,username}&access_token=${TOKEN}`);
+  if (process.env.IG_USER_ID) return process.env.IG_USER_ID;
+  const r = await fetch(`${FB_API}/me?fields=instagram_business_account,connected_instagram_account&access_token=${TOKEN}`);
   const j = await r.json();
   if (j.error) throw new Error("Facebook respondeu: " + j.error.message);
-  if (!j.instagram_business_account) throw new Error("Esta Página do Facebook não está ligada a um Instagram profissional.");
-  console.log("Instagram encontrado: @" + j.instagram_business_account.username);
-  return j.instagram_business_account.id;
+  const conta = j.instagram_business_account || j.connected_instagram_account;
+  if (!conta) throw new Error("Esta Página do Facebook não está ligada a um Instagram profissional.");
+  console.log("Instagram encontrado: " + conta.id);
+  return conta.id;
 }
 
 async function renovarToken() {
