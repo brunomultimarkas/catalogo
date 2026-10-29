@@ -13,7 +13,23 @@ const API = process.env.IG_API || "https://graph.instagram.com";
 
 if (!TOKEN) { console.error("Falta o segredo IG_TOKEN."); process.exit(1); }
 
+// Dois tipos de chave funcionam:
+//  - Token de PÁGINA do Facebook (começa com "EAA"): não vence. Usa graph.facebook.com.
+//  - Token do login do Instagram (começa com "IG"): vence em 60 dias e é renovado aqui.
+const VIA_FACEBOOK = TOKEN.startsWith("EAA");
+const FB_API = process.env.FB_API || "https://graph.facebook.com/v21.0";
+
+async function contaInstagramDaPagina() {
+  const r = await fetch(`${FB_API}/me?fields=instagram_business_account{id,username}&access_token=${TOKEN}`);
+  const j = await r.json();
+  if (j.error) throw new Error("Facebook respondeu: " + j.error.message);
+  if (!j.instagram_business_account) throw new Error("Esta Página do Facebook não está ligada a um Instagram profissional.");
+  console.log("Instagram encontrado: @" + j.instagram_business_account.username);
+  return j.instagram_business_account.id;
+}
+
 async function renovarToken() {
+  if (VIA_FACEBOOK) return; // token de página não vence
   // A chave dura 60 dias; renovando sempre, ela nunca vence.
   try {
     const r = await fetch(`${API}/refresh_access_token?grant_type=ig_refresh_token&access_token=${TOKEN}`);
@@ -27,7 +43,9 @@ async function renovarToken() {
 
 async function buscarPosts() {
   const campos = "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp";
-  let url = `${API}/me/media?fields=${campos}&limit=100&access_token=${TOKEN}`;
+  let url = VIA_FACEBOOK
+    ? `${FB_API}/${await contaInstagramDaPagina()}/media?fields=${campos}&limit=100&access_token=${TOKEN}`
+    : `${API}/me/media?fields=${campos}&limit=100&access_token=${TOKEN}`;
   const lista = [];
   while (url && lista.length < MAX_POSTS) {
     const r = await fetch(url);
