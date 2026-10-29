@@ -1,0 +1,53 @@
+name: Atualizar catálogo
+
+on:
+  schedule:
+    - cron: "17 * * * *"   # de hora em hora
+  workflow_dispatch:        # botão "Run workflow" para atualizar na hora
+
+permissions:
+  contents: write
+
+concurrency:
+  group: catalogo
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install --no-audit --no-fund
+
+      - name: Puxar fotos do Instagram
+        env:
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          MAX_POSTS: 500
+        run: node scripts/atualizar.mjs
+
+      - name: Guardar chave renovada
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -f .novo_token ] && [ -n "$GH_TOKEN" ]; then
+            gh secret set IG_TOKEN --body "$(cat .novo_token)" --repo "$GITHUB_REPOSITORY"
+            echo "Chave salva."
+          fi
+          rm -f .novo_token
+
+      - name: Publicar mudanças
+        run: |
+          git config user.name "robo-catalogo"
+          git config user.email "robo-catalogo@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Sem novidades."
+          else
+            git commit -m "Catálogo atualizado com o feed do Instagram"
+            git push
+          fi
