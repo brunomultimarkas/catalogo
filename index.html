@@ -165,12 +165,13 @@
       .filter(c => c.palavras.some(w => t.includes(norm(w))))
       .filter(c => !(c.nome === "Ofertas" && dias > (C.diasOferta || 45)))
       .map(c => c.nome);
+    if (p.tipo === "VIDEO") cats.unshift("Vídeos");
     if (dias <= C.diasNovidade) cats.unshift("Chegou agora");
     return cats;
   }
 
   function montarFiltros(){
-    const nomes = ["Todos", "Chegou agora", ...C.categorias.map(c => c.nome)];
+    const nomes = ["Todos", "Chegou agora", "Vídeos", ...C.categorias.map(c => c.nome)];
     $("filtros").innerHTML = nomes.map(n => {
       const qtd = n === "Todos" ? todos.length : todos.filter(p => p.cats.includes(n)).length;
       if (!qtd) return "";
@@ -243,7 +244,7 @@
   fetch("dados/posts.json?v=" + Date.now())
     .then(r => r.json())
     .then(d => {
-      const ocultos = new Set(C.ocultarPosts || []);
+      const ocultos = new Set([...(C.ocultarPosts || []), ...(C.ocultarVideos || [])]);
       const proibidas = (C.palavrasOcultar || []).map(norm);
       todos = (d.posts || [])
         .filter(p => C.mostrarVideos || p.tipo !== "VIDEO")
