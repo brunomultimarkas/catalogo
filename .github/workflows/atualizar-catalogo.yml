@@ -28,6 +28,7 @@ jobs:
         env:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           MAX_POSTS: 500
+          IG_USER_ID: "17841413057399677"   # @brunomultimarkas
         run: node scripts/atualizar.mjs
 
       - name: Guardar chave renovada
