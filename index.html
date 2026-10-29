@@ -160,8 +160,11 @@
 
   function categorizar(p){
     const t = norm(p.legenda);
-    const cats = C.categorias.filter(c => c.palavras.some(w => t.includes(norm(w)))).map(c => c.nome);
     const dias = (Date.now() - new Date(p.data)) / 864e5;
+    const cats = C.categorias
+      .filter(c => c.palavras.some(w => t.includes(norm(w))))
+      .filter(c => !(c.nome === "Ofertas" && dias > (C.diasOferta || 45)))
+      .map(c => c.nome);
     if (dias <= C.diasNovidade) cats.unshift("Chegou agora");
     return cats;
   }
@@ -240,7 +243,13 @@
   fetch("dados/posts.json?v=" + Date.now())
     .then(r => r.json())
     .then(d => {
-      todos = (d.posts || []).map(p => ({...p, cats: categorizar(p)}));
+      const ocultos = new Set(C.ocultarPosts || []);
+      const proibidas = (C.palavrasOcultar || []).map(norm);
+      todos = (d.posts || [])
+        .filter(p => C.mostrarVideos || p.tipo !== "VIDEO")
+        .filter(p => !ocultos.has(p.id))
+        .filter(p => { const t = norm(p.legenda); return !proibidas.some(w => t.includes(w)); })
+        .map(p => ({...p, cats: categorizar(p)}));
       if (d.atualizado) $("atualizado").textContent = "Atualizado em " + new Date(d.atualizado).toLocaleDateString("pt-BR");
       montarFiltros(); aplicar();
     })
