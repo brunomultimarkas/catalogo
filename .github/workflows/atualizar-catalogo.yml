@@ -2,11 +2,18 @@ name: Atualizar catálogo
 
 on:
   schedule:
-    - cron: "17 * * * *"   # de hora em hora
-  workflow_dispatch:        # botão "Run workflow" para atualizar na hora
+    # Horários em UTC (Bahia = UTC-3)
+    - cron: "17 11-23/2 * * *"   # rápido: a cada 2h, das 8h às 20h (Bahia)
+    - cron: "47 6 * * *"         # completo: 1x por dia, às 3h47 da madrugada (Bahia)
+  workflow_dispatch:             # botão "Run workflow" para atualizar na hora
+    inputs:
+      modo:
+        description: "rapido ou completo"
+        default: "completo"
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: catalogo
@@ -15,6 +22,7 @@ concurrency:
 jobs:
   atualizar:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -29,26 +37,52 @@ jobs:
           IG_TOKEN: ${{ secrets.IG_TOKEN }}
           MAX_POSTS: 500
           IG_USER_ID: "17841413057399677"   # @brunomultimarkas
+          MODO: ${{ github.event.schedule == '47 6 * * *' && 'completo' || inputs.modo || 'rapido' }}
         run: node scripts/atualizar.mjs
-
-      - name: Guardar chave renovada
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          if [ -f .novo_token ] && [ -n "$GH_TOKEN" ]; then
-            gh secret set IG_TOKEN --body "$(cat .novo_token)" --repo "$GITHUB_REPOSITORY"
-            echo "Chave salva."
-          fi
-          rm -f .novo_token
 
       - name: Publicar mudanças
         run: |
           git config user.name "robo-catalogo"
           git config user.email "robo-catalogo@users.noreply.github.com"
+          rm -f .novo_token .erro_chave
           git add -A
           if git diff --cached --quiet; then
             echo "Sem novidades."
           else
             git commit -m "Catálogo atualizado com o feed do Instagram"
+            git pull --rebase --autostash || true
             git push
           fi
+
+      # ---- Aviso automático: abre UM alerta (que chega no seu e-mail) quando para de funcionar
+      - name: Avisar que parou
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ABERTO=$(gh issue list --repo "$GITHUB_REPOSITORY" --label alerta-catalogo --state open --json number --jq 'length')
+          if [ "$ABERTO" = "0" ]; then
+            gh label create alerta-catalogo --repo "$GITHUB_REPOSITORY" --color B60205 2>/dev/null || true
+            MOTIVO="Falha passageira ou de internet. O robô tenta de novo sozinho na próxima rodada."
+            if [ -f .erro_chave ]; then
+              MOTIVO="A Meta recusou a chave do Instagram: $(cat .erro_chave). Normalmente é preciso entrar em developers.facebook.com, confirmar a conta e gerar uma nova chave (IG_TOKEN)."
+            fi
+            gh issue create --repo "$GITHUB_REPOSITORY" --label alerta-catalogo \
+              --title "⚠️ Catálogo parou de atualizar" \
+              --body "O catálogo continua no ar com as peças de antes, mas parou de puxar posts novos.
+
+          **Motivo:** $MOTIVO
+
+          Detalhes: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+
+          Este aviso fecha sozinho quando o robô voltar a funcionar."
+          fi
+
+      - name: Fechar aviso quando voltar
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in $(gh issue list --repo "$GITHUB_REPOSITORY" --label alerta-catalogo --state open --json number --jq '.[].number'); do
+            gh issue close "$n" --repo "$GITHUB_REPOSITORY" --comment "✅ Voltou a funcionar em $(date -u '+%d/%m %H:%M') UTC."
+          done
