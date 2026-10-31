@@ -38,6 +38,25 @@
   .titulo-cat{display:inline-block;margin-top:18px;padding:7px 18px;border-radius:999px;
     background:var(--ouro);color:var(--preto);font-family:Anton,sans-serif;letter-spacing:.12em;font-size:15px;text-transform:uppercase}
 
+  .logo-img{display:block;width:210px;height:235px;margin:-10px auto 0;object-fit:cover;
+    -webkit-mask-image:linear-gradient(to right,transparent,#000 14%,#000 86%,transparent),linear-gradient(to bottom,transparent,#000 12%,#000 88%,transparent);
+    -webkit-mask-composite:source-in;mask-composite:intersect}
+  .tag.top{background:linear-gradient(180deg,#fff3c4,var(--ouro-claro));color:var(--preto)}
+  /* ---------- Escolha da loja ---------- */
+  .lojas{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center}
+  .lojas.aberto{display:flex}
+  .folha{width:100%;max-width:480px;background:var(--preto-2);border:1px solid var(--linha);border-bottom:0;border-radius:22px 22px 0 0;padding:22px 18px 28px;text-align:center}
+  @media(min-width:700px){.lojas{align-items:center}.folha{border-radius:22px;border-bottom:1px solid var(--linha)}}
+  .folha h3{font-family:Anton,sans-serif;letter-spacing:.06em;font-weight:400;font-size:22px;text-transform:uppercase}
+  .folha p{color:var(--cinza);font-size:13px;margin:6px 0 16px}
+  .folha .loja{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:10px;padding:14px 16px;border-radius:14px;
+    border:1px solid var(--linha);background:var(--preto);text-align:left}
+  .folha .loja:hover{border-color:var(--ouro)}
+  .folha .loja b{display:block;font-size:15px}
+  .folha .loja span{font-size:12px;color:var(--cinza)}
+  .folha .loja i{font-style:normal;background:#25d366;color:#fff;font-weight:700;font-size:12px;padding:7px 11px;border-radius:999px;white-space:nowrap}
+  .folha .cancelar{margin-top:14px;color:var(--cinza);font-size:13px}
+
   /* ---------- Filtros ---------- */
   .filtros-wrap{position:sticky;top:0;z-index:20;background:rgba(10,10,10,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--linha)}
   .busca{max-width:1200px;margin:0 auto;padding:12px 16px 0}
@@ -94,9 +113,7 @@
 <body>
 
 <header class="topo">
-  <div class="selo">BM</div>
-  <div class="marca">Bruno</div>
-  <div class="marca-script">Multimarcas</div>
+  <img class="logo-img" src="logo.jpg" alt="Bruno Multimarcas Store">
   <div class="slogan" id="slogan">Sua Moda Masculina</div>
   <div class="titulo-cat">Catálogo Virtual</div>
 </header>
@@ -119,10 +136,19 @@
   <div style="margin-top:8px"><a id="link-ig" style="color:var(--ouro-claro)" target="_blank" rel="noopener"></a></div>
 </footer>
 
-<a class="flutuante" id="zap-geral" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+<button class="flutuante" id="zap-geral" aria-label="Falar no WhatsApp">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.8-1.1-4.6-4-4.8-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.3.5-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.7-.1 1.3Z"/></svg>
   Fale conosco
-</a>
+</button>
+
+<div class="lojas" id="lojas" role="dialog" aria-modal="true" aria-labelledby="lojas-titulo">
+  <div class="folha">
+    <h3 id="lojas-titulo">Escolha a loja</h3>
+    <p id="lojas-sub">Você será atendido no WhatsApp da loja escolhida.</p>
+    <div id="lojas-lista"></div>
+    <button class="cancelar" id="lojas-cancelar">Cancelar</button>
+  </div>
+</div>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true">
   <button class="fechar" id="fechar" aria-label="Fechar">×</button>
@@ -131,7 +157,7 @@
     <div class="lado">
       <div class="data" id="m-data"></div>
       <div class="leg" id="m-leg"></div>
-      <a class="btn-zap" id="m-zap" target="_blank" rel="noopener">Quero essa peça</a>
+      <button class="btn-zap" id="m-zap">Quero essa peça</button>
       <a class="btn-ig" id="m-ig" target="_blank" rel="noopener">Ver post no Instagram</a>
     </div>
   </div>
@@ -147,17 +173,46 @@
   const $ = id => document.getElementById(id);
   const norm = s => (s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
   const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  const zapLink = (p) => "https://wa.me/" + C.whatsapp + "?text=" +
-    encodeURIComponent(C.mensagemWhatsapp + (p ? "\n" + p.link : ""));
+  const LOJAS = C.lojas || [{ nome: "Bruno Multimarcas", whatsapp: C.whatsapp, endereco: "" }];
+  const zapLink = (loja, p) => "https://wa.me/" + loja.whatsapp + "?text=" + encodeURIComponent(
+    p ? `Olá, ${loja.nome} da Bruno Multimarcas! Vi essa peça no catálogo e quero saber mais:\n${p.link}`
+      : `Olá, ${loja.nome} da Bruno Multimarcas! Vim pelo catálogo.`);
+  const evento = (nome, dados) => { try { if (window.gtag) gtag("event", nome, dados); } catch(e){} };
+  let pedidoAtual = null;
+  function escolherLoja(p){
+    pedidoAtual = p;
+    $("lojas-sub").textContent = p ? "Escolha a loja para pedir esta peça no WhatsApp." : "Você será atendido no WhatsApp da loja escolhida.";
+    if (LOJAS.length === 1) { abrirZap(0); return; }
+    $("lojas").classList.add("aberto");
+  }
+  function abrirZap(k){
+    const loja = LOJAS[k];
+    evento("pedido_whatsapp", { loja: loja.nome, post: pedidoAtual ? pedidoAtual.id : "geral" });
+    window.open(zapLink(loja, pedidoAtual), "_blank", "noopener");
+    $("lojas").classList.remove("aberto");
+  }
+  $("lojas-lista").innerHTML = LOJAS.map((l, k) =>
+    `<button class="loja" data-loja="${k}"><span><b>${esc(l.nome)}</b><span>${esc(l.endereco || "")}</span></span><i>WhatsApp</i></button>`).join("");
+  $("lojas-lista").addEventListener("click", e => { const b = e.target.closest("[data-loja]"); if (b) abrirZap(+b.dataset.loja); });
+  $("lojas-cancelar").addEventListener("click", () => $("lojas").classList.remove("aberto"));
+  $("lojas").addEventListener("click", e => { if (e.target.id === "lojas") $("lojas").classList.remove("aberto"); });
+  // Google Analytics (opcional): só liga se tiver o código no config.js
+  if (C.ga4) {
+    const g = document.createElement("script"); g.async = true; g.src = "https://www.googletagmanager.com/gtag/js?id=" + C.ga4;
+    document.head.appendChild(g);
+    window.dataLayer = window.dataLayer || []; window.gtag = function(){ dataLayer.push(arguments); };
+    gtag("js", new Date()); gtag("config", C.ga4);
+  }
 
   // textos fixos
   $("slogan").textContent = C.slogan;
-  $("enderecos").innerHTML = C.enderecos.map(esc).join("<br>");
+  $("enderecos").innerHTML = (C.lojas ? C.lojas.map(l => `<strong>${esc(l.nome)}</strong> · ${esc(l.endereco || "")}`) : C.enderecos.map(esc)).join("<br>");
   $("cidade").textContent = C.cidade;
   $("link-ig").href = "https://instagram.com/" + C.instagram;
   $("link-ig").textContent = "@" + C.instagram;
-  $("zap-geral").href = "https://wa.me/" + C.whatsapp + "?text=" + encodeURIComponent("Olá, Bruno Multimarcas! Vim pelo catálogo.");
+  $("zap-geral").addEventListener("click", () => escolherLoja(null));
 
+  const MAIS_VENDIDOS = new Set(C.maisVendidos || []);
   function categorizar(p){
     const t = norm(p.legenda);
     const dias = (Date.now() - new Date(p.data)) / 864e5;
@@ -166,12 +221,13 @@
       .filter(c => !(c.nome === "Ofertas" && dias > (C.diasOferta || 45)))
       .map(c => c.nome);
     if (p.tipo === "VIDEO") cats.unshift("Vídeos");
+    if (MAIS_VENDIDOS.has(p.id) || t.includes("#maisvendido")) cats.unshift("Mais vendidos");
     if (dias <= C.diasNovidade) cats.unshift("Chegou agora");
     return cats;
   }
 
   function montarFiltros(){
-    const nomes = ["Todos", "Chegou agora", "Vídeos", ...C.categorias.map(c => c.nome)];
+    const nomes = ["Todos", "Mais vendidos", "Chegou agora", "Vídeos", ...C.categorias.map(c => c.nome)];
     $("filtros").innerHTML = nomes.map(n => {
       const qtd = n === "Todos" ? todos.length : todos.filter(p => p.cats.includes(n)).length;
       if (!qtd) return "";
@@ -192,17 +248,17 @@
   }
 
   function card(p, i){
-    const novo = p.cats.includes("Chegou agora"), oferta = p.cats.includes("Ofertas");
-    const leg = (p.legenda||"").split("\n").find(l => l.trim()) || "Bruno Multimarcas";
+    const novo = p.cats.includes("Chegou agora"), oferta = p.cats.includes("Ofertas"), top = p.cats.includes("Mais vendidos");
+    const leg = ((p.legenda||"").split("\n").find(l => l.trim()) || "Bruno Multimarcas").replace(/#(maisvendido|naocatalogo)/gi, "").trim();
     return `<article class="card">
       <button class="foto" data-i="${i}" aria-label="Ver detalhes">
         <img src="${esc(p.foto)}" alt="${esc(leg.slice(0,90))}" loading="lazy">
-        ${oferta ? '<span class="tag oferta">Oferta</span>' : novo ? '<span class="tag">Novidade</span>' : ""}
+        ${top ? '<span class="tag top">★ Mais vendido</span>' : oferta ? '<span class="tag oferta">Oferta</span>' : novo ? '<span class="tag">Novidade</span>' : ""}
         ${p.tipo === "VIDEO" ? '<span class="play"><svg width="10" height="12" viewBox="0 0 10 12" fill="#fff"><path d="M0 0l10 6-10 6z"/></svg></span>' : ""}
       </button>
       <div class="corpo">
         <p class="legenda">${esc(leg)}</p>
-        <a class="btn-zap" href="${zapLink(p)}" target="_blank" rel="noopener">Quero essa peça</a>
+        <button class="btn-zap" data-pedir="${i}">Quero essa peça</button>
       </div>
     </article>`;
   }
@@ -220,7 +276,8 @@
     $("m-foto").alt = (p.legenda||"").slice(0,90);
     $("m-leg").textContent = p.legenda || "";
     $("m-data").textContent = new Date(p.data).toLocaleDateString("pt-BR", {day:"2-digit", month:"long", year:"numeric"});
-    $("m-zap").href = zapLink(p);
+    $("m-zap").onclick = () => escolherLoja(p);
+    evento("ver_peca", { post: p.id });
     $("m-ig").href = p.link;
     $("m-ig").textContent = p.tipo === "VIDEO" ? "Assistir o vídeo no Instagram" : "Ver post no Instagram";
     $("modal").classList.add("aberto");
@@ -234,11 +291,14 @@
     document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
     aplicar();
   });
-  $("grade").addEventListener("click", e => { const f = e.target.closest(".foto"); if (f) abrir(+f.dataset.i); });
+  $("grade").addEventListener("click", e => {
+    const f = e.target.closest(".foto"); if (f) return abrir(+f.dataset.i);
+    const z = e.target.closest("[data-pedir]"); if (z) escolherLoja(filtrados[+z.dataset.pedir]);
+  });
   $("mais").addEventListener("click", mais);
   $("fechar").addEventListener("click", fechar);
   $("modal").addEventListener("click", e => { if (e.target.id === "modal") fechar(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") fechar(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") { fechar(); $("lojas").classList.remove("aberto"); } });
   let t; $("busca").addEventListener("input", e => { clearTimeout(t); t = setTimeout(() => { termo = e.target.value; aplicar(); }, 200); });
 
   fetch("dados/posts.json?v=" + Date.now())

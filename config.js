@@ -6,7 +6,18 @@ window.CATALOGO = {
   loja: "Bruno Multimarcas",
   slogan: "Sua Moda Masculina",
   instagram: "brunomultimarkas",
-  whatsapp: "5573998220999", // só números, com 55 + DDD
+  whatsapp: "5573998220999", // número principal (reserva)
+  // Lojas: o cliente escolhe em qual quer ser atendido (só números, com 55 + DDD)
+  lojas: [
+    { nome: "Loja Centro", whatsapp: "5573998220999", endereco: "Rua 5 de Novembro, nº 80 · Centro" },
+    { nome: "Loja Pequi",  whatsapp: "5573981822862", endereco: "Rua Boa Vista, nº 145A · Pequi" }
+  ],
+
+  // MAIS VENDIDOS: coloque #maisvendido na legenda do post, ou cole o número do post aqui
+  maisVendidos: [],
+
+  // Google Analytics 4 (contador de visitas e cliques). Ex.: "G-ABC123XYZ". Vazio = desligado.
+  ga4: "",
   mensagemWhatsapp: "Olá, Bruno Multimarcas! Vi essa peça no catálogo e quero saber mais:",
   enderecos: [
     "Matriz · Rua 5 de Novembro, nº 80 · Centro",
