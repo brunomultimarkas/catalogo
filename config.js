@@ -17,7 +17,7 @@ window.CATALOGO = {
   maisVendidos: [],
 
   // Google Analytics 4 (contador de visitas e cliques). Ex.: "G-ABC123XYZ". Vazio = desligado.
-  ga4: "",
+  ga4: "G-77DWCKGVYZ",
   mensagemWhatsapp: "Olá, Bruno Multimarcas! Vi essa peça no catálogo e quero saber mais:",
   enderecos: [
     "Matriz · Rua 5 de Novembro, nº 80 · Centro",
