@@ -6,6 +6,10 @@ import sharp from "sharp";
 
 const TOKEN = process.env.IG_TOKEN;
 const MAX_POSTS = Number(process.env.MAX_POSTS || 500); // quantos posts mais recentes entram
+// MODO "rapido": só confere os posts mais novos (poucas consultas, roda várias vezes ao dia)
+// MODO "completo": revisa o feed inteiro e tira o que foi apagado/arquivado (1x por dia)
+const MODO = process.env.MODO === "completo" ? "completo" : "rapido";
+const POSTS_RAPIDO = 25;
 const RAIZ = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const ARQ = path.join(RAIZ, "dados", "posts.json");
 const PASTA_FOTOS = path.join(RAIZ, "fotos");
@@ -19,11 +23,31 @@ if (!TOKEN) { console.error("Falta o segredo IG_TOKEN."); process.exit(1); }
 const VIA_FACEBOOK = TOKEN.startsWith("EAA");
 const FB_API = process.env.FB_API || "https://graph.facebook.com/v21.0";
 
+const espera = ms => new Promise(r => setTimeout(r, ms));
+// Busca na API com novas tentativas em falhas passageiras (internet, limite de uso, instabilidade da Meta)
+async function api(url) {
+  const passageiros = [1, 2, 4, 17, 32, 341, 613, 80002];
+  for (let tentativa = 1; ; tentativa++) {
+    let j;
+    try {
+      const r = await fetch(url, { signal: AbortSignal.timeout(30000) });
+      j = await r.json();
+    } catch (e) { j = { error: { message: e.message, code: 2 } }; }
+    if (!j.error) return j;
+    const passageiro = passageiros.includes(j.error.code) || j.error.is_transient;
+    if (!passageiro || tentativa >= 4) {
+      const e = new Error(`Meta respondeu (código ${j.error.code ?? "?"}): ${j.error.message}`);
+      e.chave = !passageiro; // problema de chave/permissão, não adianta repetir
+      throw e;
+    }
+    console.log(`Falha passageira (${j.error.message}). Tentando de novo em ${tentativa * 30}s...`);
+    await espera(tentativa * 30000);
+  }
+}
+
 async function contaInstagramDaPagina() {
   if (process.env.IG_USER_ID) return process.env.IG_USER_ID;
-  const r = await fetch(`${FB_API}/me?fields=instagram_business_account,connected_instagram_account&access_token=${TOKEN}`);
-  const j = await r.json();
-  if (j.error) throw new Error("Facebook respondeu: " + j.error.message);
+  const j = await api(`${FB_API}/me?fields=instagram_business_account,connected_instagram_account&access_token=${TOKEN}`);
   const conta = j.instagram_business_account || j.connected_instagram_account;
   if (!conta) throw new Error("Esta Página do Facebook não está ligada a um Instagram profissional.");
   console.log("Instagram encontrado: " + conta.id);
@@ -43,20 +67,19 @@ async function renovarToken() {
   } catch (e) { console.log("Não deu pra renovar a chave agora:", e.message); }
 }
 
-async function buscarPosts() {
+async function buscarPosts(maximo) {
+  const limite = Math.min(maximo, 100);
   const campos = "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp";
   let url = VIA_FACEBOOK
-    ? `${FB_API}/${await contaInstagramDaPagina()}/media?fields=${campos}&limit=100&access_token=${TOKEN}`
-    : `${API}/me/media?fields=${campos}&limit=100&access_token=${TOKEN}`;
+    ? `${FB_API}/${await contaInstagramDaPagina()}/media?fields=${campos}&limit=${limite}&access_token=${TOKEN}`
+    : `${API}/me/media?fields=${campos}&limit=${limite}&access_token=${TOKEN}`;
   const lista = [];
-  while (url && lista.length < MAX_POSTS) {
-    const r = await fetch(url);
-    const j = await r.json();
-    if (j.error) throw new Error("Instagram respondeu: " + j.error.message);
+  while (url && lista.length < maximo) {
+    const j = await api(url);
     lista.push(...j.data);
     url = j.paging?.next;
   }
-  return lista.slice(0, MAX_POSTS);
+  return lista.slice(0, maximo);
 }
 
 async function baixarFoto(post) {
@@ -73,40 +96,56 @@ async function baixarFoto(post) {
   } catch (e) { console.log("Falhou foto", post.id, e.message); return false; }
 }
 
+function paraCatalogo(p) {
+  return {
+    id: p.id,
+    tipo: p.media_type, // IMAGE, CAROUSEL_ALBUM ou VIDEO
+    foto: `fotos/${p.id}.jpg`,
+    legenda: p.caption || "",
+    link: p.permalink,
+    data: p.timestamp
+  };
+}
+
 async function main() {
   await fs.mkdir(PASTA_FOTOS, { recursive: true });
   await renovarToken();
 
-  const posts = await buscarPosts();
-  console.log(`Instagram devolveu ${posts.length} posts.`);
-
-  const saida = [];
-  for (const p of posts) {
-    if (await baixarFoto(p)) {
-      saida.push({
-        id: p.id,
-        tipo: p.media_type, // IMAGE, CAROUSEL_ALBUM ou VIDEO
-        foto: `fotos/${p.id}.jpg`,
-        legenda: p.caption || "",
-        link: p.permalink,
-        data: p.timestamp
-      });
-    }
-  }
-
-  // Apaga fotos de posts que saíram do feed (arquivados/excluídos)
-  const ids = new Set(saida.map(p => p.id));
-  for (const f of await fs.readdir(PASTA_FOTOS)) {
-    if (f.endsWith(".jpg") && !ids.has(f.replace(".jpg", ""))) await fs.unlink(path.join(PASTA_FOTOS, f));
-  }
-
-  // Só grava se algo mudou (evita atualização à toa)
   let antigo = { posts: [] };
   try { antigo = JSON.parse(await fs.readFile(ARQ, "utf8")); } catch {}
-  if (JSON.stringify(antigo.posts) === JSON.stringify(saida)) { console.log("Nada novo no feed."); return; }
 
+  const posts = await buscarPosts(MODO === "completo" ? MAX_POSTS : POSTS_RAPIDO);
+  console.log(`Modo ${MODO}: Instagram devolveu ${posts.length} posts.`);
+
+  const novos = [];
+  for (const p of posts) if (await baixarFoto(p)) novos.push(paraCatalogo(p));
+
+  let saida;
+  if (MODO === "completo") {
+    saida = novos;
+    // Apaga fotos de posts que saíram do feed (arquivados/excluídos)
+    const ids = new Set(saida.map(p => p.id));
+    for (const f of await fs.readdir(PASTA_FOTOS)) {
+      if (f.endsWith(".jpg") && !ids.has(f.replace(".jpg", ""))) await fs.unlink(path.join(PASTA_FOTOS, f));
+    }
+  } else {
+    // Junta os posts mais novos com o que já estava no catálogo
+    const ids = new Set(novos.map(p => p.id));
+    saida = [...novos, ...antigo.posts.filter(p => !ids.has(p.id))]
+      .sort((a, b) => new Date(b.data) - new Date(a.data))
+      .slice(0, MAX_POSTS);
+  }
+
+  // Segurança: nunca esvazia o catálogo por causa de uma resposta estranha
+  if (!saida.length) { console.log("Resposta vazia; catálogo mantido como estava."); return; }
+
+  if (JSON.stringify(antigo.posts) === JSON.stringify(saida)) { console.log("Nada novo no feed."); return; }
   await fs.writeFile(ARQ, JSON.stringify({ atualizado: new Date().toISOString(), posts: saida }, null, 1));
   console.log(`Catálogo atualizado com ${saida.length} peças.`);
 }
 
-main().catch(e => { console.error(e.message); process.exit(1); });
+main().catch(async e => {
+  console.error(e.message);
+  if (e.chave) await fs.writeFile(path.join(RAIZ, ".erro_chave"), e.message).catch(() => {});
+  process.exit(1);
+});
