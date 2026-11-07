@@ -1,6 +1,38 @@
 {
- "atualizado": "2026-11-07T15:43:32.685Z",
+ "atualizado": "2026-11-07T17:40:54.865Z",
  "posts": [
+  {
+   "id": "18288101749292750",
+   "tipo": "VIDEO",
+   "foto": "fotos/18288101749292750.jpg",
+   "legenda": "",
+   "link": "https://www.instagram.com/reel/DfcpmGgzwPa/",
+   "data": "2026-11-07T16:55:46+0000"
+  },
+  {
+   "id": "18152211529556113",
+   "tipo": "VIDEO",
+   "foto": "fotos/18152211529556113.jpg",
+   "legenda": "",
+   "link": "https://www.instagram.com/reel/Dfco0f9z4QF/",
+   "data": "2026-11-07T16:43:35+0000"
+  },
+  {
+   "id": "18135401648504850",
+   "tipo": "VIDEO",
+   "foto": "fotos/18135401648504850.jpg",
+   "legenda": "",
+   "link": "https://www.instagram.com/reel/DfcoiYMzEyJ/",
+   "data": "2026-11-07T16:41:38+0000"
+  },
+  {
+   "id": "18103231871427934",
+   "tipo": "VIDEO",
+   "foto": "fotos/18103231871427934.jpg",
+   "legenda": "",
+   "link": "https://www.instagram.com/reel/Dfcod2VzbLO/",
+   "data": "2026-11-07T16:40:40+0000"
+  },
   {
    "id": "18349877809252510",
    "tipo": "VIDEO",
@@ -3968,38 +4000,6 @@
    "legenda": "",
    "link": "https://www.instagram.com/reel/C4-qgZwu4H9/",
    "data": "2024-03-26T13:28:21+0000"
-  },
-  {
-   "id": "18037965544814043",
-   "tipo": "VIDEO",
-   "foto": "fotos/18037965544814043.jpg",
-   "legenda": "",
-   "link": "https://www.instagram.com/reel/C4yZA9DOFf_/",
-   "data": "2024-03-21T19:04:47+0000"
-  },
-  {
-   "id": "17990173190413167",
-   "tipo": "VIDEO",
-   "foto": "fotos/17990173190413167.jpg",
-   "legenda": "Semana do consumidor é Mega aniversário BM Multimarcas!!\nOfertas imbatíveis!!!",
-   "link": "https://www.instagram.com/reel/C4jdwsysrkc/",
-   "data": "2024-03-15T23:58:24+0000"
-  },
-  {
-   "id": "18045313864650907",
-   "tipo": "VIDEO",
-   "foto": "fotos/18045313864650907.jpg",
-   "legenda": "Quer promoção de verdade? receba essa!!!",
-   "link": "https://www.instagram.com/reel/C4iuoOBuB20/",
-   "data": "2024-03-15T17:05:53+0000"
-  },
-  {
-   "id": "18176781901295733",
-   "tipo": "VIDEO",
-   "foto": "fotos/18176781901295733.jpg",
-   "legenda": "",
-   "link": "https://www.instagram.com/reel/C4NrIcnMQ6m/",
-   "data": "2024-03-07T12:51:05+0000"
   }
  ]
 }
