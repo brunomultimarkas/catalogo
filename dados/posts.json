@@ -1,6 +1,14 @@
 {
- "atualizado": "2026-11-10T15:53:45.114Z",
+ "atualizado": "2026-11-10T17:52:12.566Z",
  "posts": [
+  {
+   "id": "18348299914253510",
+   "tipo": "CAROUSEL_ALBUM",
+   "foto": "fotos/18348299914253510.jpg",
+   "legenda": "A equipe Bruno Multimarcas agradece de coração pela confiança e preferência. Foi um prazer receber vocês!\n\nQue essa parceria continue por muitos momentos especiais. Obrigado por escolherem a nossa loja 🙏🏼",
+   "link": "https://www.instagram.com/p/DfkSPrQlUvk/",
+   "data": "2026-11-10T16:00:00+0000"
+  },
   {
    "id": "18376873036243851",
    "tipo": "VIDEO",
@@ -3992,14 +4000,6 @@
    "legenda": "",
    "link": "https://www.instagram.com/reel/C5n61pBM4Ga/",
    "data": "2024-04-11T13:59:49+0000"
-  },
-  {
-   "id": "18028033313062483",
-   "tipo": "VIDEO",
-   "foto": "fotos/18028033313062483.jpg",
-   "legenda": "",
-   "link": "https://www.instagram.com/reel/C5l2tmLO_vK/",
-   "data": "2024-04-10T18:45:18+0000"
   }
  ]
 }
