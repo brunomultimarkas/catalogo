@@ -1,6 +1,22 @@
 {
- "atualizado": "2026-11-10T07:57:01.927Z",
+ "atualizado": "2026-11-10T14:18:28.620Z",
  "posts": [
+  {
+   "id": "18110120756570405",
+   "tipo": "VIDEO",
+   "foto": "fotos/18110120756570405.jpg",
+   "legenda": "LINHA DE INVERNO COM 30% OFF 🥶",
+   "link": "https://www.instagram.com/reel/DfkGfs6z4eS/",
+   "data": "2026-11-10T14:18:01+0000"
+  },
+  {
+   "id": "18019728032956024",
+   "tipo": "VIDEO",
+   "foto": "fotos/18019728032956024.jpg",
+   "legenda": "O aquecimento começou! 🔥🫶🏽👻\nPrepare-se para oportunidades que você não pode perder.\n\nAguardem...🚨✨🚨✨",
+   "link": "https://www.instagram.com/reel/Dfj9Jj5BfLr/",
+   "data": "2026-11-10T12:55:06+0000"
+  },
   {
    "id": "18112838390233797",
    "tipo": "VIDEO",
@@ -3984,22 +4000,6 @@
    "legenda": "",
    "link": "https://www.instagram.com/reel/C5lwfHXuWCu/",
    "data": "2024-04-10T17:51:12+0000"
-  },
-  {
-   "id": "18005268314222711",
-   "tipo": "VIDEO",
-   "foto": "fotos/18005268314222711.jpg",
-   "legenda": "",
-   "link": "https://www.instagram.com/reel/C5jVCu_uzVt/",
-   "data": "2024-04-09T19:12:47+0000"
-  },
-  {
-   "id": "17935416206728131",
-   "tipo": "VIDEO",
-   "foto": "fotos/17935416206728131.jpg",
-   "legenda": "",
-   "link": "https://www.instagram.com/reel/C5V6Cabs4qw/",
-   "data": "2024-04-04T14:06:29+0000"
   }
  ]
 }
