@@ -1,6 +1,14 @@
 {
- "atualizado": "2026-11-10T14:18:28.620Z",
+ "atualizado": "2026-11-10T15:53:45.114Z",
  "posts": [
+  {
+   "id": "18376873036243851",
+   "tipo": "VIDEO",
+   "foto": "fotos/18376873036243851.jpg",
+   "legenda": "TODA COLEÇÃO DE INVERNO COM 30% Off 🚨",
+   "link": "https://www.instagram.com/reel/DfkHFX5zrbN/",
+   "data": "2026-11-10T14:23:00+0000"
+  },
   {
    "id": "18110120756570405",
    "tipo": "VIDEO",
@@ -3992,14 +4000,6 @@
    "legenda": "",
    "link": "https://www.instagram.com/reel/C5l2tmLO_vK/",
    "data": "2024-04-10T18:45:18+0000"
-  },
-  {
-   "id": "18015499274235871",
-   "tipo": "VIDEO",
-   "foto": "fotos/18015499274235871.jpg",
-   "legenda": "",
-   "link": "https://www.instagram.com/reel/C5lwfHXuWCu/",
-   "data": "2024-04-10T17:51:12+0000"
   }
  ]
 }
