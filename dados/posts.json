@@ -1,6 +1,14 @@
 {
- "atualizado": "2026-11-19T21:56:35.908Z",
+ "atualizado": "2026-11-21T14:04:02.733Z",
  "posts": [
+  {
+   "id": "17971096665228969",
+   "tipo": "VIDEO",
+   "foto": "fotos/17971096665228969.jpg",
+   "legenda": "COMPROU GANHOU 🤩",
+   "link": "https://www.instagram.com/reel/DgAWfABBqrE/",
+   "data": "2026-11-21T13:36:21+0000"
+  },
   {
    "id": "18077335862786438",
    "tipo": "VIDEO",
@@ -3992,14 +4000,6 @@
    "legenda": "",
    "link": "https://www.instagram.com/reel/C6HP1CAuE_0/",
    "data": "2024-04-23T17:59:50+0000"
-  },
-  {
-   "id": "18001594376597206",
-   "tipo": "VIDEO",
-   "foto": "fotos/18001594376597206.jpg",
-   "legenda": "",
-   "link": "https://www.instagram.com/reel/C6G9zvwMHQ6/",
-   "data": "2024-04-23T15:23:47+0000"
   }
  ]
 }
